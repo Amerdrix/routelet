@@ -1,0 +1,32 @@
+{
+  "name": "routelet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/src/routelet.js",
+   "types": "./lib/src/main.d.ts",
+  "scripts": {
+    "test": "mocha test/**/*.test.ts --require ts-node/register"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Amerdrix/routelet.git"
+  },
+  "keywords": [
+    "routing",
+    "router"
+  ],
+  "author": "Courtney de Lautour",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Amerdrix/routelet/issues"
+  },
+  "homepage": "https://github.com/Amerdrix/routelet#readme",
+  "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/mocha": "^2.2.32",
+    "chai": "^3.5.0",
+    "mocha": "^3.1.2",
+    "ts-node": "^1.7.0",
+    "typescript": "^2.0.9"
+  }
+}
