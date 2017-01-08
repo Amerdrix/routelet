@@ -4,7 +4,8 @@
         "moduleResolution": "node",
         "outDir": "lib",
         "declaration": true,
-        "sourceMap": true   
+        "sourceMap": true,
+        "strictNullChecks": true
         
     },
     "files": [

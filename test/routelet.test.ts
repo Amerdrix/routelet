@@ -1,4 +1,4 @@
-import { createRouter, router, finaliser } from '../src/routelet'
+import { createRouter, staticPath, router, finaliser } from '../src/routelet'
 
 import { expect } from 'chai'
 
@@ -21,7 +21,7 @@ describe("createRouter", () => {
 })
 
 describe("a router", () => {
-    var router: router = null
+    var router: router = createRouter(pathProvider)
 
     beforeEach(() => {
         router = createRouter(pathProvider)
@@ -127,6 +127,34 @@ describe("a router", () => {
             changePath("/user")
             expect(count).to.eq(1)
         })
+        describe("the finaliser", () => {
+            it("is not called when the path changes to a match", () => {
+                var count = 0
+                const route = router("/user")
+                route.handleWith(() => {
+                    return () => {
+                        count++
+                    }
+                })
+
+                changePath("/user")
+                expect(count).to.eq(0)
+            })
+            it("is called when the path leaves a match", () => {
+                var count = 0
+                const route = router("/user")
+                changePath("/user")
+                route.handleWith(() => {
+                    return () => {
+                        count++
+                    }
+                })
+
+                changePath("/user2")
+                expect(count).to.eq(1)
+            })
+        })
+
     })
 
 

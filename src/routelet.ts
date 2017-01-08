@@ -50,9 +50,10 @@ export function createRouter(pathProvider: pathProvider, base?: string): router 
 
     var currentPath: string = "/"
     var currentRouteMap: routeMap
+    var nestedRouter
 
     var dispatchToHandler = (handler: enterCallback) => {
-        handler({}, null, currentRouteMap.route)
+        handler({}, nestedRouter, currentRouteMap.route)
     }
 
     function getRouteMap(path: string) {
@@ -72,9 +73,9 @@ export function createRouter(pathProvider: pathProvider, base?: string): router 
         }
 
         currentRouteMap = routeMap
+        nestedRouter = createRouter(staticPath(currentPath), currentPath)
 
-        dispatchToHandler = (handler: enterCallback) => handler({}, null, currentRouteMap.route)
-
+        dispatchToHandler = (handler: enterCallback) => handler({}, nestedRouter, currentRouteMap.route)
         if (currentRouteMap) {
             currentRouteMap.privateRoute.enter.forEach(dispatchToHandler)
         }
@@ -103,7 +104,7 @@ export function createRouter(pathProvider: pathProvider, base?: string): router 
         })
 
         route.handleWith = (callback => {
-            var finaliser: finaliser | void
+            var finaliser: finaliser | null | void
 
             route
                 .onEnter((params, router, route) => finaliser = callback(params, router, route))
