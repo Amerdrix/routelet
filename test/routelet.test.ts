@@ -6,7 +6,7 @@ import { expect } from 'chai'
 var changePath: (string) => () => void
 const pathProvider = (onChange) => {
     changePath = onChange;
-    return () => {}
+    return () => { }
 }
 
 describe("createRouter", () => {
@@ -40,7 +40,7 @@ describe("a router", () => {
     })
 
     describe("onEnter", () => {
-          it("is not called once when the path changes to a non match", () => {
+        it("is not called when the path changes to a non match", () => {
             var count = 0
             const route = router("/user")
             route.onEnter(() => {
@@ -76,8 +76,7 @@ describe("a router", () => {
     })
 
     describe("onExit", () => {
-
-        it("is not called when the path leaves a different route" , () => {
+        it("is not called when the path leaves a different route", () => {
             var count = 0
             changePath("/user2")
 
@@ -104,8 +103,30 @@ describe("a router", () => {
 
             expect(count).to.eq(1)
         })
+    })
 
+    describe("handleWith", () => {
+        it("is not called when the path changes to a non match", () => {
+            var count = 0
+            const route = router("/user")
+            route.handleWith(() => {
+                count++
+            })
 
+            changePath("/user2")
+            expect(count).to.eq(0)
+        })
+
+        it("is called once when the path changes to a match", () => {
+            var count = 0
+            const route = router("/user")
+            route.handleWith(() => {
+                count++
+            })
+
+            changePath("/user")
+            expect(count).to.eq(1)
+        })
     })
 
 

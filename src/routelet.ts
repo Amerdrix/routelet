@@ -23,7 +23,7 @@ interface exitCallback {
 }
 
 interface fluientRoute {
-    handleWith: (callback: (params: any, nestedRouter: router, route: route) => finaliser) => route
+    handleWith: (callback: (params: any, nestedRouter: router, route: route) => finaliser | void) => route
     onEnter: (callback: enterCallback) => route
     onExit: (callback: exitCallback) => route
 }
@@ -44,13 +44,6 @@ function rankRouteMatch(path: string, pattern: string) {
     return path == pattern ? 1 : 0
 }
 
-export function staticPath(path: string): pathProvider {
-    return (onChange) => {
-        onChange(path)
-        return () => { }
-    }
-}
-
 export function createRouter(pathProvider: pathProvider, base?: string): router {
     interface routeMap { pattern: string, route: route, privateRoute: privateRoute }
     const routes: routeMap[] = []
@@ -64,16 +57,15 @@ export function createRouter(pathProvider: pathProvider, base?: string): router 
 
     function getRouteMap(path: string) {
         const rankingFunction = ({pattern}) => rankRouteMatch(path, pattern)
-        const bestMatch = routes.sort((a, b) => rankingFunction(a) - rankingFunction(b)).filter(a =>rankingFunction(a) > 0)[0]
+        const bestMatch = routes.sort((a, b) => rankingFunction(a) - rankingFunction(b)).filter(a => rankingFunction(a) > 0)[0]
         return bestMatch
     }
 
     function updateRoute() {
         const routeMap = getRouteMap(currentPath)
-        if (currentRouteMap === routeMap){
+        if (currentRouteMap === routeMap) {
             return
-        } 
-
+        }
 
         if (currentRouteMap) {
             currentRouteMap.privateRoute.exit.forEach(exit => exit({}, currentRouteMap.route))
@@ -91,7 +83,6 @@ export function createRouter(pathProvider: pathProvider, base?: string): router 
     const unbindPathProvider = pathProvider((path: string) => {
         currentPath = path
         updateRoute()
-
     })
 
     const router = ((pattern: string) => {
@@ -109,13 +100,25 @@ export function createRouter(pathProvider: pathProvider, base?: string): router 
         route.onExit = (callback => {
             privateRoute.exit.push(callback)
             return route
-        
-        }) 
+        })
+
+        route.handleWith = (callback => {
+            var finaliser: finaliser | void
+
+            route
+                .onEnter((params, router, route) => finaliser = callback(params, router, route))
+                .onExit(() => {
+                    if (finaliser) {
+                        finaliser()
+                        finaliser = null
+                    }
+                })
+            return route
+        })
 
         routes.push({ pattern, route, privateRoute })
 
-        updateRoute()        
-        
+        updateRoute()
         return route as route;
     }) as router
 
@@ -125,5 +128,9 @@ export function createRouter(pathProvider: pathProvider, base?: string): router 
     return router
 }
 
-
-
+export function staticPath(path: string): pathProvider {
+    return (onChange) => {
+        onChange(path)
+        return () => { }
+    }
+}
