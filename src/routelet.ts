@@ -41,7 +41,9 @@ interface pathProvider {
 }
 
 function rankRouteMatch(path: string, pattern: string) {
-    return path == pattern ? 1 : 0
+    const weight = pattern.split('/').length
+    const matcher = new RegExp(`^${pattern.replace(/:\w+/g, '\\w+')}$`)
+    return matcher.test(path) ? weight : 0
 }
 
 export function createRouter(pathProvider: pathProvider, base?: string): router {
@@ -73,10 +75,16 @@ export function createRouter(pathProvider: pathProvider, base?: string): router 
         }
 
         currentRouteMap = routeMap
-        nestedRouter = createRouter(staticPath(currentPath), currentPath)
 
-        dispatchToHandler = (handler: enterCallback) => handler({}, nestedRouter, currentRouteMap.route)
+
         if (currentRouteMap) {
+            nestedRouter = createRouter(staticPath(currentPath), currentPath)
+            const paramNames = currentRouteMap.pattern.match(/:\w+/g) || []
+            const matcher = new RegExp(`^${currentRouteMap.pattern.replace(/:\w+/g, '(\\w+)')}$`)
+            const paramValues = currentPath.match(matcher) || []
+            const params = paramNames.reduce((acc, name, index) => {acc[name.replace(':', '')] = paramValues[index + 1]; return acc}, {}) 
+
+            dispatchToHandler = (handler: enterCallback) => handler(params, nestedRouter, currentRouteMap.route)
             currentRouteMap.privateRoute.enter.forEach(dispatchToHandler)
         }
     }

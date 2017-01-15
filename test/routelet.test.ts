@@ -9,154 +9,170 @@ const pathProvider = (onChange) => {
     return () => { }
 }
 
-describe("createRouter", () => {
+describe('createRouter', () => {
 
-    it("does not throw", () => {
+    it('does not throw', () => {
         expect(() => createRouter(pathProvider)).to.not.throw(Error)
     })
 
-    it("returns a router", () => {
+    it('returns a router', () => {
         expect(createRouter(pathProvider)).to.not.be.null
     })
 })
 
-describe("a router", () => {
+describe('a router', () => {
     var router: router = createRouter(pathProvider)
 
     beforeEach(() => {
         router = createRouter(pathProvider)
     })
 
-    describe("path building", () => {
-        it("returns a non parameterised route without modification", () => {
-            const builder = router("/user")
-            expect(builder()).to.eql("/user")
+    describe('path building', () => {
+        it('returns a non parameterised route without modification', () => {
+            const builder = router('/user')
+            expect(builder()).to.eql('/user')
         })
 
-        it("inserts parameterised route values", () => {
-            const builder = router("/user/:id/:name")
-            expect(builder({ id: 5, name: 'bob' })).to.eq("/user/5/bob")
+        it('inserts parameterised route values', () => {
+            const builder = router('/user/:id/:name')
+            expect(builder({ id: 5, name: 'bob' })).to.eq('/user/5/bob')
         })
     })
 
-    describe("onEnter", () => {
-        it("is not called when the path changes to a non match", () => {
+    describe('onEnter', () => {
+        it('is not called when the path changes to a non match', () => {
             var count = 0
-            const route = router("/user")
+            const route = router('/user')
             route.onEnter(() => {
                 count++
             })
 
-            changePath("/user2")
+            changePath('/user2')
             expect(count).to.eq(0)
         })
 
-        it("is called once when the path changes to a match", () => {
+        it('is called once when the path changes to a match', () => {
             var count = 0
-            const route = router("/user")
+            const route = router('/user')
             route.onEnter(() => {
                 count++
             })
 
-            changePath("/user")
+            changePath('/user')
             expect(count).to.eq(1)
         })
 
-        it("is called when the path already matches", () => {
+        it('is called when the path already matches', () => {
             var count = 0
-            changePath("/user")
+            changePath('/user')
 
-            const route = router("/user")
+            const route = router('/user')
             route.onEnter(() => {
                 count++
             })
 
             expect(count).to.eq(1)
         })
+
+
+        it('is extracts in path params', () => {
+            var id, name
+            
+
+            const route = router('/user/:id/:name')
+            route.onEnter((p) => {
+                id = p.id
+                name = p.name
+
+            })
+            changePath('/user/id_field/name_field')
+
+            expect(id).to.eq('id_field')
+            expect(name).to.eq('name_field')
+        })
+
+
     })
 
-    describe("onExit", () => {
-        it("is not called when the path leaves a different route", () => {
+    describe('onExit', () => {
+        it('is not called when the path leaves a different route', () => {
             var count = 0
-            changePath("/user2")
+            changePath('/user2')
 
-            const route = router("/user")
+            const route = router('/user')
             route.onExit(() => {
                 count++
             })
 
-            changePath("/user")
+            changePath('/user')
 
             expect(count).to.eq(0)
         })
 
-        it("is called when the path leaves", () => {
+        it('is called when the path leaves', () => {
             var count = 0
-            changePath("/user")
+            changePath('/user')
 
-            const route = router("/user")
+            const route = router('/user')
             route.onExit(() => {
                 count++
             })
 
-            changePath("/user2")
+            changePath('/user2')
 
             expect(count).to.eq(1)
         })
     })
 
-    describe("handleWith", () => {
-        it("is not called when the path changes to a non match", () => {
+    describe('handleWith', () => {
+        it('is not called when the path changes to a non match', () => {
             var count = 0
-            const route = router("/user")
+            const route = router('/user')
             route.handleWith(() => {
                 count++
             })
 
-            changePath("/user2")
+            changePath('/user2')
             expect(count).to.eq(0)
         })
 
-        it("is called once when the path changes to a match", () => {
+        it('is called once when the path changes to a match', () => {
             var count = 0
-            const route = router("/user")
+            const route = router('/user')
             route.handleWith(() => {
                 count++
             })
 
-            changePath("/user")
+            changePath('/user')
             expect(count).to.eq(1)
         })
-        describe("the finaliser", () => {
-            it("is not called when the path changes to a match", () => {
+        describe('the finaliser', () => {
+            it('is not called when the path changes to a match', () => {
                 var count = 0
-                const route = router("/user")
+                const route = router('/user')
                 route.handleWith(() => {
                     return () => {
                         count++
                     }
                 })
 
-                changePath("/user")
+                changePath('/user')
                 expect(count).to.eq(0)
             })
-            it("is called when the path leaves a match", () => {
+            it('is called when the path leaves a match', () => {
                 var count = 0
-                const route = router("/user")
-                changePath("/user")
+                const route = router('/user')
+                changePath('/user')
                 route.handleWith(() => {
                     return () => {
                         count++
                     }
                 })
 
-                changePath("/user2")
+                changePath('/user2')
                 expect(count).to.eq(1)
             })
         })
 
     })
-
-
-
 })
